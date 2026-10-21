@@ -1,0 +1,196 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vui Vui - Đố vui thử tài</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:system-ui,sans-serif;background:linear-gradient(145deg,#21144b,#5733a3,#e96c9b);color:white;padding:20px;display:flex;justify-content:center;align-items:center}
+.app{width:100%;max-width:480px;background:#ffffff17;border:1px solid #ffffff40;border-radius:28px;padding:24px 18px;box-shadow:0 18px 55px #160b3155;backdrop-filter:blur(10px)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.logo{font-weight:900;font-size:19px}
+button{font:inherit;cursor:pointer}
+.small{border:1px solid #ffffff60;border-radius:12px;background:#ffffff20;color:white;padding:9px 12px}
+.hero{text-align:center;padding:24px 0 12px}
+.emoji{font-size:66px}
+h1{font-size:36px;margin:6px 0}
+p{line-height:1.6;color:#f4eaff}
+.subtitle{margin:0 auto 22px}
+.primary{width:100%;border:0;border-radius:16px;background:#ffe36e;color:#38205d;font-weight:850;padding:15px;margin-top:10px;box-shadow:0 5px 0 #c59c3e}
+.primary:active{transform:translateY(2px);box-shadow:0 3px 0 #c59c3e}
+.secondary{width:100%;border:1px solid #ffffff70;border-radius:15px;background:#ffffff16;color:white;padding:13px;margin-top:10px}
+.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0}
+.level{border:1px solid #ffffff60;background:#ffffff17;color:white;border-radius:14px;padding:12px 4px}
+.level.active{background:#ffe36e;color:#38205d;border-color:#ffe36e;font-weight:bold}
+.note{text-align:center;font-size:12px;color:#e9dafa;margin-top:18px}
+.hidden{display:none!important}
+.stats{display:flex;justify-content:space-between;gap:8px;margin:20px 0}
+.stat{background:#ffffff18;border-radius:13px;padding:10px;text-align:center;flex:1;font-size:13px}
+.stat b{display:block;font-size:20px}
+.progress{height:8px;border-radius:9px;background:#ffffff30;overflow:hidden;margin-bottom:22px}
+.bar{height:100%;width:0;background:#ffe36e;transition:width .3s}
+.question{font-size:22px;line-height:1.4;font-weight:800;margin:15px 0 20px}
+.answers{display:grid;gap:11px}
+.answer{display:flex;align-items:center;gap:12px;text-align:left;width:100%;border:1px solid #ffffff50;border-radius:15px;padding:13px;background:#ffffff15;color:white}
+.letter{display:grid;place-items:center;flex-shrink:0;width:34px;height:34px;border-radius:10px;background:#ffffff25;font-weight:bold}
+.answer.correct{background:#198754;border-color:#7df5b0}
+.answer.wrong{background:#b83257;border-color:#ffb4c6}
+.answer:disabled{cursor:default}
+.feedback{min-height:48px;text-align:center;font-weight:bold;padding-top:14px}
+.result{text-align:center;padding:20px 0}
+.result h2{font-size:29px}
+</style>
+</head>
+<body>
+<main class="app">
+<div class="top">
+<div class="logo">🌟 VUI VUI</div>
+<button class="small" id="musicBtn" onclick="toggleMusic()">🔇 Nhạc: Tắt</button>
+</div>
+
+<section id="home">
+<div class="hero">
+<div class="emoji">🎮✨</div>
+<h1>Vui Vui</h1>
+<p class="subtitle">Đố vui thử tài — Bạn biết được bao nhiêu?</p>
+</div>
+<div style="font-weight:bold">Chọn cấp độ của bạn</div>
+<div class="levels">
+<button class="level active" onclick="setLevel(0)">🌱<br>Dễ</button>
+<button class="level" onclick="setLevel(1)">🔥<br>Vừa</button>
+<button class="level" onclick="setLevel(2)">🚀<br>Khó</button>
+</div>
+<button class="primary" onclick="startGame()">BẮT ĐẦU CHƠI ▶</button>
+<button class="secondary" onclick="showRules()">📖 Cách chơi</button>
+<p class="note">Trả lời đúng để tích lũy điểm nhé!</p>
+</section>
+
+<section id="rules" class="hidden">
+<h2>📖 Cách chơi</h2>
+<p>• Mỗi câu có 4 đáp án, chỉ có một đáp án đúng.</p>
+<p>• Trả lời đúng được 10 điểm.</p>
+<p>• Chọn một cấp độ và cố gắng đạt điểm cao nhất!</p>
+<button class="primary" onclick="showHome()">Đã hiểu!</button>
+</section>
+
+<section id="game" class="hidden">
+<div class="stats">
+<div class="stat">CÂU HỎI<b id="counter">1/10</b></div>
+<div class="stat">ĐIỂM<b id="score">0</b></div>
+<div class="stat">CẤP ĐỘ<b id="levelName">Dễ</b></div>
+</div>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<div class="question" id="question"></div>
+<div class="answers" id="answers"></div>
+<div class="feedback" id="feedback"></div>
+<button class="primary hidden" id="nextBtn" onclick="nextQuestion()">Câu tiếp theo ➜</button>
+<button class="secondary" onclick="showHome()">Thoát về trang chủ</button>
+</section>
+
+<section id="result" class="hidden">
+<div class="result">
+<div class="emoji" id="resultEmoji">🏆</div>
+<h2 id="resultTitle">Hoàn thành!</h2>
+<p id="resultText"></p>
+<p id="resultScore" style="font-size:30px;font-weight:900;color:#ffe36e"></p>
+</div>
+<button class="primary" onclick="startGame()">🔄 Chơi lại</button>
+<button class="secondary" onclick="showHome()">🏠 Trang chủ</button>
+</section>
+</main>
+<script>
+const bank=[
+[
+{q:"Thủ đô của Việt Nam là thành phố nào?",a:["Đà Nẵng","Hà Nội","Huế","Cần Thơ"],c:1},
+{q:"Một tuần có bao nhiêu ngày?",a:["5 ngày","6 ngày","7 ngày","8 ngày"],c:2},
+{q:"Hành tinh chúng ta đang sống là gì?",a:["Sao Hỏa","Sao Kim","Trái Đất","Sao Mộc"],c:2},
+{q:"Loài vật nào thường được gọi là chúa sơn lâm?",a:["Hổ","Voi","Khỉ","Hươu"],c:0},
+{q:"2 + 3 × 2 bằng bao nhiêu?",a:["10","12","8","7"],c:2},
+{q:"Nước đóng băng ở khoảng bao nhiêu độ C?",a:["100°C","0°C","50°C","20°C"],c:1},
+{q:"Cầu vồng thường có bao nhiêu màu theo cách phân loại phổ biến?",a:["5","6","7","8"],c:2},
+{q:"Đại dương lớn nhất thế giới là gì?",a:["Ấn Độ Dương","Bắc Băng Dương","Đại Tây Dương","Thái Bình Dương"],c:3},
+{q:"Một năm thường có bao nhiêu tháng?",a:["10","11","12","13"],c:2},
+{q:"Cây xanh hấp thụ khí nào trong quang hợp?",a:["Oxy","Carbon dioxide","Heli","Hydro"],c:1}
+],
+[
+{q:"Tác phẩm Truyện Kiều do ai sáng tác?",a:["Nguyễn Du","Nam Cao","Tố Hữu","Xuân Diệu"],c:0},
+{q:"Công thức hóa học của nước là gì?",a:["CO₂","O₂","H₂O","NaCl"],c:2},
+{q:"Một tam giác có tổng ba góc bằng bao nhiêu?",a:["90°","180°","270°","360°"],c:1},
+{q:"Châu lục nào có diện tích lớn nhất?",a:["Châu Phi","Châu Âu","Châu Á","Châu Đại Dương"],c:2},
+{q:"Thiết bị nào chuyển đổi năng lượng ánh sáng thành điện năng?",a:["Pin mặt trời","Quạt điện","Loa","Bếp gas"],c:0},
+{q:"Từ nào là từ láy?",a:["Học sinh","Long lanh","Bàn ghế","Nhà cửa"],c:1},
+{q:"Số nguyên tố nhỏ nhất là số nào?",a:["0","1","2","3"],c:2},
+{q:"Cơ quan nào bơm máu đi khắp cơ thể?",a:["Phổi","Tim","Gan","Thận"],c:1},
+{q:"Đơn vị đo cường độ dòng điện là gì?",a:["Vôn","Oát","Ampe","Mét"],c:2},
+{q:"Trái Đất quay quanh thiên thể nào?",a:["Mặt Trăng","Mặt Trời","Sao Hỏa","Sao Kim"],c:1}
+],
+[
+{q:"Nghiệm của phương trình 3x − 6 = 0 là gì?",a:["x = 3","x = 2","x = −2","x = 6"],c:1},
+{q:"Nguyên tố có kí hiệu hóa học Fe là gì?",a:["Flo","Sắt","Bạc","Đồng"],c:1},
+{q:"Cơ quan chủ yếu thực hiện trao đổi khí ở người là gì?",a:["Dạ dày","Thận","Phổi","Tim"],c:2},
+{q:"Từ nào gần nghĩa nhất với “kiên trì”?",a:["Bền bỉ","Vội vàng","Lười biếng","Ngẫu nhiên"],c:0},
+{q:"Nếu vận tốc không đổi, quãng đường được tính bằng công thức nào?",a:["s = v/t","s = v × t","s = t/v","s = v + t"],c:1},
+{q:"Quá trình cây thoát hơi nước diễn ra chủ yếu qua bộ phận nào?",a:["Rễ","Hoa","Khí khổng ở lá","Hạt"],c:2},
+{q:"Số nào sau đây chia hết cho cả 3 và 5?",a:["22","35","45","52"],c:2},
+{q:"Tầng khí quyển gần bề mặt Trái Đất nhất là gì?",a:["Tầng bình lưu","Tầng đối lưu","Tầng nhiệt","Tầng ngoài"],c:1},
+{q:"Trong câu “Mặt trời xuống biển như hòn lửa”, biện pháp tu từ nổi bật là gì?",a:["So sánh","Nói quá","Nhân hóa","Hoán dụ"],c:0},
+{q:"Nếu một vật có khối lượng 2 kg và gia tốc 3 m/s², lực tác dụng là bao nhiêu?",a:["5 N","6 N","1,5 N","9 N"],c:1}
+]
+];
+let level=0,questions=[],index=0,score=0,locked=false,musicOn=false,audio=null,musicTimer=null;
+function show(id){["home","rules","game","result"].forEach(x=>document.getElementById(x).classList.toggle("hidden",x!==id))}
+function showHome(){stopMusic();show("home")}
+function showRules(){show("rules")}
+function setLevel(n){level=n;document.querySelectorAll(".level").forEach((b,i)=>b.classList.toggle("active",i===n))}
+function startGame(){stopMusic();questions=[...bank[level]].sort(()=>Math.random()-.5);index=0;score=0;locked=false;show("game");document.getElementById("levelName").textContent=["Dễ","Vừa","Khó"][level];render()}
+function render(){
+locked=false;
+const q=questions[index];
+document.getElementById("counter").textContent=(index+1)+"/"+questions.length;
+document.getElementById("score").textContent=score;
+document.getElementById("bar").style.width=(index/questions.length*100)+"%";
+document.getElementById("question").textContent=q.q;
+document.getElementById("feedback").textContent="";
+document.getElementById("nextBtn").classList.add("hidden");
+const box=document.getElementById("answers");box.innerHTML="";
+q.a.forEach((answer,i)=>{const b=document.createElement("button");b.className="answer";const letter=document.createElement("span");letter.className="letter";letter.textContent=String.fromCharCode(65+i);const txt=document.createElement("span");txt.textContent=answer;b.append(letter,txt);b.onclick=()=>choose(i,b);box.appendChild(b)});
+}
+function choose(choice,button){
+if(locked)return;locked=true;
+const q=questions[index];const buttons=[...document.querySelectorAll(".answer")];
+buttons.forEach(b=>b.disabled=true);
+if(choice===q.c){score+=10;button.classList.add("correct");document.getElementById("feedback").textContent="🎉 Chính xác! +10 điểm";tone(660,.15)}
+else{button.classList.add("wrong");buttons[q.c].classList.add("correct");document.getElementById("feedback").textContent="💡 Chưa đúng rồi! Cố gắng nhé.";tone(220,.25)}
+document.getElementById("score").textContent=score;
+document.getElementById("nextBtn").textContent=index===questions.length-1?"Xem kết quả 🏆":"Câu tiếp theo ➜";
+document.getElementById("nextBtn").classList.remove("hidden");
+}
+function nextQuestion(){if(index<questions.length-1){index++;render()}else finish()}
+function finish(){
+show("result");document.getElementById("bar").style.width="100%";
+document.getElementById("resultEmoji").textContent=score>=80?"🏆":score>=50?"🌟":"💪";
+document.getElementById("resultTitle").textContent=score>=80?"Xuất sắc!":score>=50?"Làm tốt lắm!":"Đừng bỏ cuộc!";
+document.getElementById("resultText").textContent="Bạn đã hoàn thành cấp độ "+["Dễ","Vừa","Khó"][level]+".";
+document.getElementById("resultScore").textContent=score+" / 100 điểm";
+tone(score>=80?880:440,.3);
+}
+function tone(freq,duration){
+try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();if(audio.state==="suspended")audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.frequency.value=freq;o.type="sine";g.gain.setValueAtTime(.0001,audio.currentTime);g.gain.exponentialRampToValueAtTime(.12,audio.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+duration);o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+duration)}catch(e){}
+}
+function toggleMusic(){
+if(musicOn){stopMusic();return}
+try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();audio.resume();musicOn=true;document.getElementById("musicBtn").textContent="🎵 Nhạc: Bật";playMusic()}catch(e){document.getElementById("musicBtn").textContent="🔇 Không hỗ trợ"}
+}
+function playMusic(){
+if(!musicOn)return;
+const notes=[261.63,329.63,392,329.63,293.66,349.23,392,349.23];
+let i=0;
+function tick(){if(!musicOn)return;const freq=notes[i++%notes.length];try{const o=audio.createOscillator(),g=audio.createGain();o.type="sine";o.frequency.value=freq;g.gain.value=.018;o.connect(g);g.connect(audio.destination);o.start();o.stop(audio.currentTime+.22)}catch(e){}musicTimer=setTimeout(tick,320)}
+tick()
+}
+function stopMusic(){musicOn=false;if(musicTimer)clearTimeout(musicTimer);document.getElementById("musicBtn").textContent="🔇 Nhạc: Tắt"}
+</script>
+</body>
+</html>
